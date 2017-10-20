@@ -1,0 +1,6 @@
+
+*.log
+
+# Backups
+*~
+*.DS_Store
