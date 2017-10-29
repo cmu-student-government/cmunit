@@ -83,11 +83,16 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description="Compile CSV exported from FCE into a machihne-readable "
                     "format")
+    parser.add_argument('--callback', default="", nargs="?",
+                        help='JSONP callback to enable cross-domain requests. '
+                             'Default: none')
     parser.add_argument('-s', '--source-dir', default="src", nargs="?",
-                        help='Directory with exported files')
+                        help='Directory with exported files. '
+                             'Default: ./src')
     parser.add_argument('-o', '--output', default="docs/fce.json", nargs="?",
                         type=argparse.FileType('w'),
-                        help='Filename to export JSON data to')
+                        help='Filename to export JSON data. '
+                             'Default: ./docs/fce.json')
     args = parser.parse_args()
 
     if not os.path.isdir(args.source_dir):
@@ -97,4 +102,9 @@ if __name__ == '__main__':
     hrs = df[
         ['course id', 'name', 'year', 'instructor', 'hrs', 'date']].sort_values(
         'date', ascending=False).groupby('course id').first()
-    hrs.to_json(args.output, orient='index', double_precision=2)
+
+    data = hrs.to_json(orient='index', double_precision=2)
+
+    if args.callback:
+        data = "".join([args.callback, "(", data, ");"])
+    args.output.write(data)
