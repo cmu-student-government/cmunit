@@ -1,0 +1,24 @@
+{
+  "manifest_version": 2,
+
+  "name": "SIO+",
+  "description": "Extends CMU Student Information Online interface with more data",
+  "author": "Marat Valiev",
+  "version": "0.0.1",
+
+  "content_scripts": [
+    {
+      "matches": ["https://s3.andrew.cmu.edu/sio/*"],
+      "js": ["content.js"]
+    }
+  ],
+  "icons": {
+      "128": "icon.png"
+  },
+
+  "permissions": [
+    "https://cmu-student-government.github.io/",
+    "activeTab",
+    "storage"
+  ]
+}
