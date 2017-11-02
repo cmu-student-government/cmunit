@@ -42,6 +42,7 @@ var sio_plus = sio_plus || {
     var node = document.getElementsByClassName("schedule-units-label")[0];
     sio_plus.log(node);
     if (!node) return;
+    // inject planned total
     node.insertBefore(new Text(" (actually " + sio_plus.course_total + ")"), node.lastChild);
     sio_plus.course_total = 0;
   },
@@ -63,6 +64,7 @@ var sio_plus = sio_plus || {
                   var hours = sio_plus.data[match[1] + match[2]];
                   hours = hours && hours["hrs"];
                   if (hours)
+                    // inject avg hrs spent to planned list
                     units_node.innerHTML += " (avg spent " + hours + ")";
                   sio_plus.course_total += (hours || parseInt(match[3]));
                 }
