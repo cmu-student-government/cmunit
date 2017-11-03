@@ -48,20 +48,7 @@ function log(message, level) {
   if (level >= log_level) console.log(message);
 }
 
-
-function updateCourseTotal(){
-  if (course_total === 0) return;
-  course_total = Math.round(course_total * 100) / 100;
-  var node = document.getElementsByClassName("schedule-units-label")[0];
-  log(node);
-  if (!node) return;
-  node.insertBefore(new Text(" (actually " + course_total + ")"), node.lastChild);
-  course_total = 0;
-}
-
 function onDOMChange (mutations) {
-  // label to match: "15-780 :: 12.0 units"
-  var id_re = /(\d\d)-(\d\d\d)\s*::\s*(\d+)/;
 
   mutations.forEach(function(mutation) {
     // Some GWT event fired, and as a result of RPC call some nodes are
@@ -69,29 +56,86 @@ function onDOMChange (mutations) {
     // try to understand what happened
 
     mutation.addedNodes.forEach(function(node) { // added nodes
-      if (node.lastChild && node.lastChild.classList) {
-        log(node);
-        node.lastChild.classList.forEach(function(cls) {
-          switch (cls) {
-            case "gwt-course": // course in the right column
-              var units_node = node.querySelectorAll(".course-units")[0];
-              var match = units_node && id_re.exec(units_node.innerHTML);
-              if (match) {
-                var hours = data[match[1] + match[2]];
-                hours = hours && hours["hrs"];
-                if (hours)
-                  units_node.innerHTML += " (avg spent " + hours + ")";
-                course_total += (hours || parseInt(match[3]));
-              }
-              break;
+      if (node.nodeType !== 1) return;
+      log(node);
 
-            case "gwt-appointment": // course in the calendar view, rendered last
-              updateCourseTotal();
-              break;
+      // right sidebar course info panel
+      node.querySelectorAll(".course-units").forEach(function (units_node) {
+
+        // sometimes nodes are added twice
+        if (units_node.hasAttribute("data-fce-hours")) return;
+        log("Course info window (right pane) detected");
+        units_node.setAttribute("data-fce-hours", "0");
+
+        // label to match: "15-780 :: 12.0 units"
+        var id_re = /(\d\d)-(\d\d\d)\s*::\s*(\d+)/,
+          match = units_node && id_re.exec(units_node.innerHTML);
+
+        if (match) {
+          var course_id = match[1] + match[2],
+            hours = data[course_id] && data[course_id]["hrs"];
+          if (hours) {
+              units_node.innerHTML += " (avg spent " + hours + ")";
           }
-        });
+          else {
+              hours = parseInt(match[3]);
+          }
+          course_total += (hours);
+          units_node.setAttribute("data-fce-hours", hours);
+        }
+      });
+
+      // detailed course description popup
+      if (node.classList.contains("gwt-DialogBox")) {
+        log("Course description popup detected");
+        var title_node = node.querySelector(".Caption"),
+          tbl_node = node.querySelector(".course-description-sections-tbl"),
+          units_node = tbl_node && tbl_node.querySelector("tr:last-child td:last-child div:last-child");
+        if (!title_node || !tbl_node || !units_node) return;
+
+        if (units_node.hasAttribute("data-fce-hours")) return;
+        units_node.setAttribute("data-fce-hours", "0");
+
+          var id_re = /(\d\d)-(\d\d\d)/,
+              match = id_re.exec(title_node.innerText);
+          if (!match) return;
+          var course_id = match[1] + match[2],
+            hours = data[course_id] && data[course_id]["hrs"];
+
+          if (hours) {
+            units_node.innerHTML += " (FCE: " + hours + ")";
+            units_node.setAttribute("data-fce-hours", hours);
+          }
+
       }
     });
+
+    mutation.removedNodes.forEach(function(node) { // added nodes
+      if (node.nodeType !== 1) return;
+      log(node);
+      // right sidebar course info panel
+      node.querySelectorAll(".course-units").forEach(function (units_node) {
+        if (!units_node.hasAttribute("data-fce-hours")) return;
+
+        course_total -= parseFloat(units_node.getAttribute("data-fce-hours"));
+      });
+    });
+
+    // update total (top right calendar)
+    course_total = Math.round(course_total * 100) / 100;
+    var course_total_node = document.getElementById("course-total-fce");
+    if (!course_total_node) {
+      var node = document.querySelector(".schedule-units-label");
+      if (node) {
+        course_total_node = document.createElement("span");
+        course_total_node.setAttribute("id", "course-total-fce");
+        node.insertBefore(course_total_node, node.lastChild);
+      }
+    }
+    if (course_total_node) {
+        course_total_node.innerText = " (actually " + course_total + ")";
+    }
+
   });
 }
 
