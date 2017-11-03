@@ -9,7 +9,8 @@
   "content_scripts": [
     {
       "matches": ["https://s3.andrew.cmu.edu/sio/*"],
-      "js": ["content.js"]
+      "js": ["content.js"],
+      "run_at": "document_start"
     }
   ],
   "icons": {
