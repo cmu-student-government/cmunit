@@ -1,6 +1,38 @@
 /*
-SIO has something like jQuery, but not really. The only available functions are
-DOM selectors. Everything else, including JSON load, should be in vanilla JS.
+
+This is a SIO_plus extension source code
+-----
+Its primary function is to extend CMU Student Information Online interface with
+useful information. As of 2017, the only information it provides is number of
+actual hours spent in a class, which should be helpful to make right decisions
+during registration.
+
+Technical side - GWT
+-----
+SIO is written using Google Web Toolkit (GWT). This is an outdated web app
+framework designed by Google in early 2000s. The concept behind this framework
+can be described as an opposite of SPA. While single page applications handle
+work mostly on the client side, using backend only for REST API calls, GWT
+concept was to make everything server side. It offers a set of reusable
+components, which are rendered on server. All interactions are transformed into
+RPC calls, which trigger server side rendering and DOM node replacement in
+callback. This makes client-side integration with GWT quite challenging.
+
+As a direct consequence from GWT architecture, you cannot intercept a callback
+or bind to an event. Instead, we have to monitor all DOM changes and then look
+into new nodes tot understand what kind of event just happened.
+
+Technical side - compatibility
+-----
+Browser: assume at least Firefox 52 or Chrome 62
+
+Bookmarklet: originally this script was designed as a bookmarklet. This is why
+we have this namespace isolation and weird code structure. This is not important
+anymore so if you feel to refactor it, go ahead.
+
+Since now it is distributed as a browser extension, it is loaded before the page
+and thus does not have access to page namespace, like this weird $ not-jQuery
+object. Everything has to be in plain vanilla javascript.
 
  */
 
@@ -51,7 +83,11 @@ var sio_plus = sio_plus || {
     var id_re = /(\d\d)-(\d\d\d)\s*::\s*(\d+)/;
 
     mutations.forEach(function(mutation) {
-      mutation.addedNodes.forEach(function(node) {
+      // Some GWT event fired, and as a result of RPC call some nodes are
+      // attached or removed. here we look at the content of these nodes and
+      // try to understand what happened
+
+      mutation.addedNodes.forEach(function(node) { // added nodes
         if (node.lastChild && node.lastChild.classList) {
           sio_plus.log(node);
           node.lastChild.classList.forEach(function(cls) {
