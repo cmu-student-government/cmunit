@@ -17,7 +17,7 @@ How It Works
 Privacy: we do not store any data
 ----
 
-Feel free to check the (source code)[https://github.com/cmu-student-government/cmunit/tree/master/src]
+Feel free to check the [source code](https://github.com/cmu-student-government/cmunit/tree/master/src)
 
 We appreciate your
     [feedback](https://docs.google.com/forms/d/e/1FAIpQLSfIXZzPUekxeUMeR0l27fnTCPI_d5FEBOXGpMR4h2riG_FpqQ/viewform)!
