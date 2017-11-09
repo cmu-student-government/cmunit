@@ -67,8 +67,9 @@ def get_evals_json(src_data_dir):
         columns=["course id", 'course name', 'dept', 'year', 'semester',
                  'section', 'instructor', 'hrs per week', 'responses']
     ).rename(columns={'course name': 'name', 'hrs per week': 'hrs'})
+    df = df[(df['section'] != "Q") & (df['section'] != "W")]
     df['responses'] = df['responses'].astype(int)
-    df = df[pd.notnull(df['hrs']) & (df['hrs'] != "") & (df['responses'] > 10)]
+    df = df[pd.notnull(df['hrs']) & (df['hrs'] != "") & (df['responses'] > 5)]
     # clean up course name: "10701", "10-701", "F14-10-701"
     df['course id'] = df['course id'].map(
         lambda s: "".join(c for c in s if c.isdigit())[-5:])
@@ -103,7 +104,7 @@ if __name__ == '__main__':
         ['course id', 'name', 'year', 'instructor', 'hrs', 'date']].sort_values(
         'date', ascending=False).groupby('course id').first()
 
-    data = hrs.to_json(orient='index', double_precision=2)
+    data = hrs.to_json(orient='index', double_precision=1)
 
     if args.callback:
         data = "".join([args.callback, "(", data, ");"])
