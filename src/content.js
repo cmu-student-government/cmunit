@@ -145,7 +145,7 @@ function onHashChange(event) {
 
 // initialize data
 var xhr = new XMLHttpRequest();
-xhr.open("GET", "https://cmu-student-government.github.io/fce-data/fce.json", true);
+xhr.open("GET", "https://cmu-student-government.github.io/cmunit/fce.json", true);
 xhr.onreadystatechange = function() {
   if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
     data = JSON.parse(xhr.responseText);
