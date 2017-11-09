@@ -75,7 +75,7 @@ function onDOMChange (mutations) {
           var course_id = match[1] + match[2],
             hours = data[course_id] && data[course_id]["hrs"];
           if (hours) {
-              units_node.innerHTML += " (avg spent " + hours + ")";
+              units_node.innerHTML += " (FCE avg hrs: " + hours + ")";
           }
           else {
               hours = parseInt(match[3]);
@@ -133,7 +133,7 @@ function onDOMChange (mutations) {
       }
     }
     if (course_total_node) {
-        course_total_node.innerText = course_total > 0 ? " (actually " + course_total + ")" : "";
+        course_total_node.innerText = course_total > 0 ? " (FCE: " + course_total + ")" : "";
     }
 
   });
