@@ -41,7 +41,7 @@ var data, // fce data
   observer;  // listener of DOM change events
 
 const DEBUG=1, INFO=1, WARNING=3, ERROR=4, CRITICAL=5;
-var log_level = DEBUG;
+var log_level = ERROR;
 
 function log(message, level) {
   level = level || DEBUG;
@@ -57,9 +57,9 @@ function onDOMChange (mutations) {
 
     mutation.addedNodes.forEach(function(node) { // added nodes
       if (node.nodeType !== 1) return;
-      log(node);
+      // log(node);
 
-      // right sidebar course info panel
+      // plan source schedule - right sidebar course info panel
       node.querySelectorAll(".course-units").forEach(function (units_node) {
 
         // sometimes nodes are added twice
@@ -85,7 +85,7 @@ function onDOMChange (mutations) {
         }
       });
 
-      // detailed course description popup
+      // plan course schedule - detailed course description popup
       if (node.classList.contains("gwt-DialogBox")) {
         log("Course description popup detected");
         var title_node = node.querySelector(".Caption"),
@@ -112,8 +112,8 @@ function onDOMChange (mutations) {
 
     mutation.removedNodes.forEach(function(node) { // added nodes
       if (node.nodeType !== 1) return;
-      log(node);
-      // right sidebar course info panel
+
+      // plan course schedule - course removed
       node.querySelectorAll(".course-units").forEach(function (units_node) {
         if (!units_node.hasAttribute("data-fce-hours")) return;
 
@@ -121,7 +121,7 @@ function onDOMChange (mutations) {
       });
     });
 
-    // update total (top right calendar)
+    // update total (top right corner of the calendar)
     course_total = Math.round(course_total * 100) / 100;
     var course_total_node = document.getElementById("course-total-fce");
     if (!course_total_node) {
@@ -133,7 +133,7 @@ function onDOMChange (mutations) {
       }
     }
     if (course_total_node) {
-        course_total_node.innerText = " (actually " + course_total + ")";
+        course_total_node.innerText = course_total > 0 ? " (actually " + course_total + ")" : "";
     }
 
   });
