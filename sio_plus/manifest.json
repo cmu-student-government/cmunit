@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
 
-  "name": "SIO+",
+  "name": "CMUnit",
   "description": "Extends CMU Student Information Online interface with more data",
   "author": "Marat Valiev",
   "version": "0.0.1",
@@ -13,6 +13,13 @@
       "run_at": "document_start"
     }
   ],
+  "browser_action": {
+    "default_icon": {
+      "128": "icon.png"
+    },
+    "default_title": "About CMUnits",
+    "default_popup": "options.html"
+  },
   "icons": {
       "128": "icon.png"
   },
