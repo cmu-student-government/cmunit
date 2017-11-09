@@ -1,3 +1,6 @@
+# DO NOT STORE RAW DATA
+*.csv
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

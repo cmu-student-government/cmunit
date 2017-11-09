@@ -86,9 +86,9 @@ if __name__ == '__main__':
     parser.add_argument('--callback', default="", nargs="?",
                         help='JSONP callback to enable cross-domain requests. '
                              'Default: none')
-    parser.add_argument('-s', '--source-dir', default="src", nargs="?",
+    parser.add_argument('-s', '--source-dir', default="data", nargs="?",
                         help='Directory with exported files. '
-                             'Default: ./src')
+                             'Default: ./data')
     parser.add_argument('-o', '--output', default="docs/fce.json", nargs="?",
                         type=argparse.FileType('w'),
                         help='Filename to export JSON data. '
