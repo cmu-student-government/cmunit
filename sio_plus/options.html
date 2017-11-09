@@ -4,6 +4,10 @@
     <meta charset="utf-8">
     <title>CMUnit - true hours in SIO</title>
     <style>
+        h1 {
+            font-size:24px;
+            font-weight: bold;
+        }
         .block {
             margin: 1em
         }
@@ -11,20 +15,27 @@
 </head>
 <body style="font-family: Arial, sans-serif; font-size: 11px; background-color: white; width: 600px;">
 
+<h1>CMUnits</h1>
+
 <div class="block">
     The CMUnits extension inserts average hours spent data from Faculty Course Evaluations (FCEs)
     into the schedule planning process for Carnegie Mellon University students.
-    This information is collected from students like you at the end of each semester when you fill
-    out FCEs and report how much time you spent on a course during an average week.
+    This information is collected from students like you at the end of each semester when
+    you fill out FCEs and report how much time you spent on a course during an average week.
     This data is best used as a guide rather than an exact estimate.
 </div>
 
+<h1>How It Works</h1>
+
+<ul class="block">
+    <li>Data is shown from the last semester the course was taught.</li>
+    <li>The current version does not take instructor into account, so if a course is taught by multiple instructors, an average is taken across lecturers.</li>
+    <li>No data is presented for a course if it is a new course, no data exists, or there were less than five responses the last time it was taught.</li>
+</ul>
+
+<h1>Privacy: we do not story any data</h1>
 <div class="block">
-    How It Works. Data is shown from the last semester the course was taught.
-    The current version does not take instructor into account, so if a course is taught by multiple instructors,
-    an average is taken across lecturers.
-    No data is presented for a course if it is a new course, no data exists,
-    or there were less than five responses the last time it was taught.
+    You may view the source code here: <a href=""></a>
 </div>
 
 <div class="block">
