@@ -104,6 +104,28 @@ if __name__ == '__main__':
         ['course id', 'name', 'year', 'instructor', 'hrs', 'date']].sort_values(
         'date', ascending=False).groupby('course id').first()
 
+    """ Several SCS courses have been renumbered for Spring 2018. The content, 
+    instructors, and all other aspects of each course remain unchanged.
+    Only the course prefix is changing.
+
+    15-214 Principles of Software Construction is now 17-214/17-514
+    15-413 Software Engineering Practicum is now 17-413
+    15-437/15-637 Web App Development is now 17-437/17-637
+    15-819 Special Topics: Program Analysis is now 17-819
+    """
+    fix2018 = {  # new: old
+        '17214': '15214',
+        '17514': '15214',
+        '17413': '15413',
+        '17437': '15437',
+        '17637': '15637',
+        '17819': '15819'
+    }
+
+    for new, old in fix2018.items():
+        if new not in hrs.index and old in hrs.index:
+            hrs.loc[new] = hrs.loc[old]
+
     data = hrs.to_json(orient='index', double_precision=1)
 
     if args.callback:
