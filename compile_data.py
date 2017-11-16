@@ -100,6 +100,10 @@ if __name__ == '__main__':
         parser.exit(1, "Provided source path is not a directory")
 
     df = get_evals_json(args.source_dir)
+
+    # Summer courses are usually more intensive and thus not representative
+    df = df[df["semester"] != "Summer"]
+
     hrs = df[
         ['course id', 'name', 'year', 'instructor', 'hrs', 'date']].sort_values(
         'date', ascending=False).groupby('course id').first()
