@@ -138,7 +138,6 @@ function onDOMChange (mutations) {
           course_total_node.innerText = label;
     }
 
-
   });
 }
 
