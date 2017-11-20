@@ -38,6 +38,7 @@ object. Everything has to be in plain vanilla javascript.
 
 var data, // fce data
   course_total = 0,  // sum of total course workload
+  prev_course_total = -1, // previous value for above, to detect changes
   observer;  // listener of DOM change events
 
 const DEBUG=1, INFO=1, WARNING=3, ERROR=4, CRITICAL=5;
@@ -121,6 +122,11 @@ function onDOMChange (mutations) {
       });
     });
 
+    // only update if total changes
+    if (course_total === prev_course_total) {
+      return;
+    }
+
     // update total (top right corner of the calendar)
     course_total = Math.round(course_total * 100) / 100;
     var course_total_node = document.getElementById("course-total-fce");
@@ -136,6 +142,7 @@ function onDOMChange (mutations) {
         course_total_node.innerText = course_total > 0 ? " (FCE: " + course_total + ")" : "";
     }
 
+    prev_course_total = course_total;
   });
 }
 
