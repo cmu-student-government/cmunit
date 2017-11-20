@@ -133,8 +133,11 @@ function onDOMChange (mutations) {
       }
     }
     if (course_total_node) {
-        course_total_node.innerText = course_total > 0 ? " (FCE: " + course_total + ")" : "";
+        var label = course_total > 0 ? " (FCE: " + course_total + ")" : "";
+        if (label != course_total_node.innerText)
+          course_total_node.innerText = label;
     }
+
 
   });
 }

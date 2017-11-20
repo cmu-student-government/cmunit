@@ -1,10 +1,10 @@
 {
   "manifest_version": 2,
 
-  "name": "CMUnit",
+  "name": "CMUnits",
   "description": "Extends CMU Student Information Online interface with more data",
   "author": "Marat Valiev",
-  "version": "0.0.1.1",
+  "version": "0.0.1.2",
 
   "content_scripts": [
     {
