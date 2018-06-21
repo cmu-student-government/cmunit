@@ -46,7 +46,7 @@ def parse_evals_file(fname):
     columns = []
 
     for row in reader:
-        if row[0] == "Semester":  # parse column names
+        if row[0] == "Year":  # parse column names
             columns = [clean_column_name(c) for c in row]
         elif not row[0]:  # year stats
             pass
@@ -64,9 +64,10 @@ def parse_evals_dir(dirname):
 def get_evals_json(src_data_dir):
     df = pd.DataFrame(
         parse_evals_dir(src_data_dir),
-        columns=["course id", 'course name', 'dept', 'year', 'semester',
-                 'section', 'instructor', 'hrs per week', 'responses']
-    ).rename(columns={'course name': 'name', 'hrs per week': 'hrs'})
+        columns=['num', 'name', 'dept', 'year', 'semester',
+                 'section', 'hrs per week', 'num respondents']
+        ).rename(columns={'num': 'course id', 'hrs per week': 'hrs',
+            'name':'instructor', 'num respondents':'responses'})
     df = df[(df['section'] != "Q") & (df['section'] != "W")]
     df['responses'] = df['responses'].astype(int)
     df = df[pd.notnull(df['hrs']) & (df['hrs'] != "") & (df['responses'] > 5)]
@@ -89,7 +90,7 @@ if __name__ == '__main__':
                              'Default: none')
     parser.add_argument('-s', '--source-dir', default="data", nargs="?",
                         help='Directory with exported files. '
-                             'Default: ./data')
+                             'Default: ./docs')
     parser.add_argument('-o', '--output', default="docs/fce.json", nargs="?",
                         type=argparse.FileType('w'),
                         help='Filename to export JSON data. '
@@ -105,10 +106,10 @@ if __name__ == '__main__':
     df = df[df["semester"] != "Summer"]
 
     hrs = df[
-        ['course id', 'name', 'year', 'instructor', 'hrs', 'date']].sort_values(
+        ['course id', 'year', 'instructor', 'hrs', 'date']].sort_values(
         'date', ascending=False).groupby('course id').first()
 
-    """ Several SCS courses have been renumbered for Spring 2018. The content, 
+    """ Several SCS courses have been renumbered for Spring 2018. The content,
     instructors, and all other aspects of each course remain unchanged.
     Only the course prefix is changing.
 
