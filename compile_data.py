@@ -37,7 +37,7 @@ import pandas as pd
 
 def clean_column_name(colname):
     colname = colname.strip()
-    return colname.rsplit(":", 1)[-1].strip(" 0123456789\t\n").lower()
+    return colname.rsplit(":", 1)[-1].strip(" 01234679\t\n").lower()
 
 
 def parse_evals_file(fname):
@@ -64,9 +64,9 @@ def parse_evals_dir(dirname):
 def get_evals_json(src_data_dir):
     df = pd.DataFrame(
         parse_evals_dir(src_data_dir),
-        columns=['num', 'name', 'dept', 'year', 'semester',
+        columns=['course id', 'name', 'dept', 'year', 'semester',
                  'section', 'hrs per week', 'num respondents']
-        ).rename(columns={'num': 'course id', 'hrs per week': 'hrs',
+        ).rename(columns={'course id': 'course id', 'hrs per week': 'hrs',
             'name':'instructor', 'num respondents':'responses'})
     df = df[(df['section'] != "Q") & (df['section'] != "W")]
     df['responses'] = df['responses'].astype(int)
@@ -80,6 +80,17 @@ def get_evals_json(src_data_dir):
     df['hrs'] = df['hrs'].astype(float)
     return df
 
+def wavg(group, avg_name, weight_name):
+    """ http://stackoverflow.com/questions/10951341/pandas-dataframe-aggregate-function-using-multiple-columns
+    In rare instance, we may not have weights, so just return the mean. Customize this if your business case
+    should return otherwise.
+    """
+    d = group[avg_name]
+    w = group[weight_name]
+    try:
+        return (d * w).sum() / w.sum()
+    except ZeroDivisionError:
+        return d.mean()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
@@ -88,7 +99,7 @@ if __name__ == '__main__':
     parser.add_argument('--callback', default="", nargs="?",
                         help='JSONP callback to enable cross-domain requests. '
                              'Default: none')
-    parser.add_argument('-s', '--source-dir', default="data", nargs="?",
+    parser.add_argument('-s', '--source-dir', default="docs", nargs="?",
                         help='Directory with exported files. '
                              'Default: ./docs')
     parser.add_argument('-o', '--output', default="docs/fce.json", nargs="?",
@@ -105,9 +116,24 @@ if __name__ == '__main__':
     # Summer courses are usually more intensive and thus not representative
     df = df[df["semester"] != "Summer"]
 
+    #recentsDict[courseID] = date,
+    #where date is the most recent time the course was taken
+    recentsDict = dict()
+    for ind, row in df.iterrows():
+        cid = row['course id']
+        date = row['date']
+        if cid not in recentsDict:
+            recentsDict[cid] = date
+            continue
+        else:
+            if date > recentsDict[cid]:
+                recentsDict[cid] = date
+
+    mask = df.apply(lambda row: recentsDict[row['course id']] == row['date'], axis = 1)
+    df = df[mask]
     hrs = df[
-        ['course id', 'year', 'instructor', 'hrs', 'date']].sort_values(
-        'date', ascending=False).groupby('course id').first()
+        ['course id', 'year', 'instructor', 'hrs', 'date', 'responses']].sort_values(
+        'date', ascending=False).groupby('course id').apply(wavg, "hrs", "responses")
 
     """ Several SCS courses have been renumbered for Spring 2018. The content,
     instructors, and all other aspects of each course remain unchanged.
