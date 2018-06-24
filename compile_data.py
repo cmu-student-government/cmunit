@@ -88,9 +88,9 @@ def wavg(group, avg_name, weight_name):
     d = group[avg_name]
     w = group[weight_name]
     try:
-        return (d * w).sum() / w.sum()
+        return {"hrs": (d * w).sum() / w.sum()}
     except ZeroDivisionError:
-        return d.mean()
+        return {"hrs": d.mean()}
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
