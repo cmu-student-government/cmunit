@@ -60,7 +60,7 @@ function onDOMChange (mutations) {
       // log(node);
 
       // plan source schedule - right sidebar course info panel
-      node.querySelectorAll(".course-units").forEach(function (units_node) {
+      node.querySelectorAll("div.txt").forEach(function (units_node) {
 
         // sometimes nodes are added twice
         if (units_node.hasAttribute("data-fce-hours")) return;
@@ -68,17 +68,18 @@ function onDOMChange (mutations) {
         units_node.setAttribute("data-fce-hours", "0");
 
         // label to match: "15-780 :: 12.0 units"
-        var id_re = /(\d\d)-(\d\d\d)\s*::\s*(\d+)/,
+        var id_re = /(\d{5})\s*::\s*(\d+)/,
           match = units_node && id_re.exec(units_node.innerHTML);
 
         if (match) {
-          var course_id = match[1] + match[2],
+          var course_id = match[1],
             hours = data[course_id] && data[course_id]["hrs"];
           if (hours) {
-              units_node.innerHTML += " (FCE avg hrs: " + hours + ")";
+              // hours = parseFloat(hours);
+              units_node.innerHTML += " (FCE avg: " + hours + ")";
           }
           else {
-              hours = parseInt(match[3]);
+              hours = parseInt(match[2]);
           }
           course_total += (hours);
           units_node.setAttribute("data-fce-hours", hours);
