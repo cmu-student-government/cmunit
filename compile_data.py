@@ -8,76 +8,56 @@ import json
 import pandas as pd
 
 
-"""  Available columns:
+"""  
+How to get the original data:
+- Go to https://cmu.smartevals.com/
+- Click the bar chart icon in the bottom of the page 
+    (a table with course info will open)
+- Click "Export to.." button in the top left corner, select CSV
+ 
 
-[u'Ability to design', u'Apply knowledge', u'Clear learning goals',
-    u'Course ID', u'Course Name', u'Dept', u'Effective Communication',
-    u'Enrollment', u'Ethical responsibility',
-    u'Explain course requirements', u'Explains subject matter',
-    u'Function on Teams', u'Global, etc. contexts', u'Hrs Per Week',
-    u'Importance of subject', u'Instructor',
-    u'Instructor provides Feedback to students',
-    u'Interest in student learning', u'Knowledge Contemporary Issues',
-    u'Life-long learning', u'Overall course', u'Overall teaching',
-    u'Proj Instr 1. Motivation', u'Proj Instr 2. Guidance',
-    u'Proj Instr 3. Knows next steps',
-    u'Proj Instr 4. Instructor availability',
-    u'Proj Instr 5. Overall Lead Effectiveness',
-    u'Project 1. Draw on Skills', u'Project 2. Develop skills',
-    u'Project 3. Demand on Time and Attn',
-    u'Project 4. External Review Committee helpfulness',
-    u'Project 5. Faculty Mgmt Satisfaction',
-    u'Project 6. Group Worked Smoothly',
-    u'Project 7. Effective learning experience', u'Project 8. Project Size',
-    u'Project 9. General Rating', u'Realistic Constraints', u'Resp. Rate %',
-    u'Responses', u'Section', u'Semester', u'Show respect for students',
-    u'Solve Problems', u'Use skills', u'Year']
+Available columns:
+
+Index([
+    u'Year', 
+    u'Semester',  # (Fall|Spring|Summer) 
+    u'Course ID', 
+    u'Section',  # ('Q' stands for Qatar)
+    u'Course Name', 
+    u'Name', # (instructor name)
+    u'Hrs Per Week', u'Hrs Per Week 5', u'Hrs Per Week 8',
+        # float with two decimals 
+        # there is one record having two values; all others have only one
+        
+    # not used by CMUnits:
+    u'Level',  # (e.g. 'Graduate') 
+    u'College',  # (e.g. 'School of Computer Science') 
+    u'Dept',  # (e.g. 'CS') 
+    u'Num Respondents', u'Response Rate %', 
+    u'Possible Respondents',
+    u'Interest in student learning',
+    u'Clearly explain course requirements',
+    u'Clear learning objectives & goals',
+    u'Instructor provides feedback to students to improve',
+    u'Demonstrate importance of subject matter',
+    u'Explains subject matter of course', 
+    u'Show respect for all students',
+    u'Overall teaching rate', u'Overall course rate'],
+      dtype='object')
+      
+The goal is to get a dict of chunks like:
+
+{
+    "02201":{
+        "name":"PRGRMMING SCIENTISTS",
+        "year":"2014",
+        "instructor":"CARLETON KINGSFORD",
+        "hrs":14.2,
+        "date":"2014-09"
+    },
+    ...
+}
 """
-
-
-def clean_column_name(colname):
-    colname = colname.strip()
-    return colname.rsplit(":", 1)[-1].strip(" 0123456789\t\n").lower()
-
-
-def parse_evals_file(fname):
-    """ Parse evaluations for a single college"""
-    reader = csv.reader(open(fname))
-    columns = []
-
-    for row in reader:
-        if row[0] == "Semester":  # parse column names
-            columns = [clean_column_name(c) for c in row]
-        elif not row[0]:  # year stats
-            pass
-        else:
-            yield {c: row[i].strip() for i, c in enumerate(columns) if c}
-
-
-def parse_evals_dir(dirname):
-    for fname in os.listdir(dirname):
-        if fname.endswith(".csv"):
-            for record in parse_evals_file(os.path.join(dirname, fname)):
-                yield record
-
-
-def get_evals_json(src_data_dir):
-    df = pd.DataFrame(
-        parse_evals_dir(src_data_dir),
-        columns=["course id", 'course name', 'dept', 'year', 'semester',
-                 'section', 'instructor', 'hrs per week', 'responses']
-    ).rename(columns={'course name': 'name', 'hrs per week': 'hrs'})
-    df = df[(df['section'] != "Q") & (df['section'] != "W")]
-    df['responses'] = df['responses'].astype(int)
-    df = df[pd.notnull(df['hrs']) & (df['hrs'] != "") & (df['responses'] > 5)]
-    # clean up course name: "10701", "10-701", "F14-10-701"
-    df['course id'] = df['course id'].map(
-        lambda s: "".join(c for c in s if c.isdigit())[-5:])
-    semesters = {'Spring': '-01', 'Summer': '-06', 'Fall': '-09'}
-    df['date'] = df.apply(
-        lambda row: row['year'] + semesters[row['semester']], axis=1)
-    df['hrs'] = df['hrs'].astype(float)
-    return df
 
 
 if __name__ == '__main__':
@@ -87,51 +67,46 @@ if __name__ == '__main__':
     parser.add_argument('--callback', default="", nargs="?",
                         help='JSONP callback to enable cross-domain requests. '
                              'Default: none')
-    parser.add_argument('-s', '--source-dir', default="data", nargs="?",
-                        help='Directory with exported files. '
-                             'Default: ./data')
+    parser.add_argument('-i', '--input', default="docs/table.csv", nargs="?",
+                        type=argparse.FileType('r'),
+                        help='Input CSV file, exported from cmu.smartevals.com.'
+                             ' Default: ./docs/table.csv.')
     parser.add_argument('-o', '--output', default="docs/fce.json", nargs="?",
                         type=argparse.FileType('w'),
                         help='Filename to export JSON data. '
                              'Default: ./docs/fce.json')
     args = parser.parse_args()
 
-    if not os.path.isdir(args.source_dir):
-        parser.exit(1, "Provided source path is not a directory")
+    df = pd.read_csv(args.input).rename(
+        columns={'Year': 'year', 'Name': 'instructor', 'Course Name': 'name'})
 
-    df = get_evals_json(args.source_dir)
+    df = df[(df['Section'] != "Q") & (df['Section'] != "W")]
+    df['month'] = df['Semester'].map({
+        'Fall': 9,
+        'Spring': 1,
+        'Summer': 6
+    })
+    df['date'] = df['year'].astype(str) + '-0' + df['month'].astype(str)
+
+    df['hrs'] = df[['Hrs Per Week', 'Hrs Per Week 5', 'Hrs Per Week 8']].max(axis=1)
+    df = df[pd.notnull(df['hrs']) & (df['Num Respondents'] > 5)]
+
+    # clean up course name: "10701", "10-701", "F14-10-701"
+    df['course id'] = df['Course ID'].map(
+        lambda s: "".join(c for c in s if c.isdigit())[-5:])
 
     # Summer courses are usually more intensive and thus not representative
-    df = df[df["semester"] != "Summer"]
+    df = df[df["Semester"] != "Summer"]
+    # information older than two years is probably not relevant
+    df = df[df['year'] > 2016]
 
     hrs = df[
         ['course id', 'name', 'year', 'instructor', 'hrs', 'date']].sort_values(
         'date', ascending=False).groupby('course id').first()
 
-    """ Several SCS courses have been renumbered for Spring 2018. The content, 
-    instructors, and all other aspects of each course remain unchanged.
-    Only the course prefix is changing.
-
-    15-214 Principles of Software Construction is now 17-214/17-514
-    15-413 Software Engineering Practicum is now 17-413
-    15-437/15-637 Web App Development is now 17-437/17-637
-    15-819 Special Topics: Program Analysis is now 17-819
-    """
-    fix2018 = {  # new: old
-        '17214': '15214',
-        '17514': '15214',
-        '17413': '15413',
-        '17437': '15437',
-        '17637': '15637',
-        '17819': '15819'
-    }
-
-    for new, old in fix2018.items():
-        if new not in hrs.index and old in hrs.index:
-            hrs.loc[new] = hrs.loc[old]
-
     data = hrs.to_json(orient='index', double_precision=1)
 
     if args.callback:
         data = "".join([args.callback, "(", data, ");"])
+
     args.output.write(data)
