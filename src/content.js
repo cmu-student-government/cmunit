@@ -115,7 +115,7 @@ function onDOMChange (mutations) {
       if (node.nodeType !== 1) return;
 
       // plan course schedule - course removed
-      node.querySelectorAll(".course-units").forEach(function (units_node) {
+      node.querySelectorAll("div.txt").forEach(function (units_node) {
         if (!units_node.hasAttribute("data-fce-hours")) return;
 
         course_total -= parseFloat(units_node.getAttribute("data-fce-hours"));
