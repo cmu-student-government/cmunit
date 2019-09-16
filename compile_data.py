@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 
+import pandas as pd
+
 import argparse
 import csv
 import os
 import json
-
-import pandas as pd
-
 
 """  
 How to get the original data:
@@ -85,7 +84,7 @@ if __name__ == '__main__':
         'Fall': 9,
         'Spring': 1,
         'Summer': 6
-    })
+    }).fillna(0)  # starting Summer 2019, Semester is empty
     df['date'] = df['year'].astype(str) + '-0' + df['month'].astype(str)
 
     df['hrs'] = df[['Hrs Per Week', 'Hrs Per Week 5', 'Hrs Per Week 8']].max(axis=1)
@@ -98,7 +97,7 @@ if __name__ == '__main__':
     # Summer courses are usually more intensive and thus not representative
     df = df[df["Semester"] != "Summer"]
     # information older than two years is probably not relevant
-    df = df[df['year'] > 2016]
+    df = df[df['year'] > 2017]
 
     hrs = df[
         ['course id', 'name', 'year', 'instructor', 'hrs', 'date']].sort_values(
