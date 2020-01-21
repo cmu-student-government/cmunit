@@ -4,7 +4,7 @@
   "name": "CMUnits",
   "description": "Extends CMU Student Information Online interface with more data",
   "author": "Marat Valiev",
-  "version": "0.0.1.4",
+  "version": "0.0.1.5",
 
   "content_scripts": [
     {
