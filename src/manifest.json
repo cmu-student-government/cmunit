@@ -28,5 +28,17 @@
     "https://cmu-student-government.github.io/",
     "activeTab",
     "storage"
-  ]
+  ],
+
+  "applications": {
+    "gecko": {
+      "id": "cmunits-firefox@sterdam.com",
+      "strict_min_version": "48.0"
+    }
+  },
+  "options_ui": {
+    "page": "options.html",
+    "browser_style": true
+  }
+
 }
