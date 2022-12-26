@@ -1,10 +1,10 @@
 {
-  "manifest_version": 2,
+  "manifest_version": 3,
 
   "name": "CMUnits",
   "description": "Extends CMU Student Information Online interface with more data",
   "author": "Marat Valiev",
-  "version": "0.0.1.4",
+  "version": "0.1.0",
 
   "content_scripts": [
     {
@@ -13,7 +13,7 @@
       "run_at": "document_start"
     }
   ],
-  "browser_action": {
+  "action": {
     "default_icon": {
       "128": "icon.png"
     },
@@ -25,8 +25,9 @@
   },
 
   "permissions": [
-    "https://cmu-student-government.github.io/",
     "activeTab",
     "storage"
-  ]
+  ],
+
+  "host_permissions": ["https://cmu-student-government.github.io/"]
 }
