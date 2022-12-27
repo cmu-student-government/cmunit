@@ -57,7 +57,6 @@ function onDOMChange (mutations) {
 
     mutation.addedNodes.forEach(function(node) { // added nodes
       if (node.nodeType !== 1) return;
-      // log(node);
 
       // plan source schedule - right sidebar course info panel
       node.querySelectorAll("div.txt").forEach(function (units_node) {
@@ -122,6 +121,7 @@ function onDOMChange (mutations) {
       });
     });
 
+
     // update total (top right corner of the calendar)
     course_total = Math.round(course_total * 100) / 100;
     var course_total_node = document.getElementById("course-total-fce");
@@ -140,6 +140,10 @@ function onDOMChange (mutations) {
     }
 
   });
+
+
+
+
 }
 
 function onHashChange(event) {
@@ -160,9 +164,48 @@ xhr.onreadystatechange = function() {
 };
 xhr.send();
 
-document.addEventListener('DOMContentLoaded', function(event){
-  var target = document.body;
-  observer = new MutationObserver(onDOMChange);
-  observer.observe(target, {childList: true, subtree: true});
-  log("Mutations observer installed");
-});
+loc = window.location.href.split("/");
+n = loc.length;
+if(loc[n - 1] != "semesterschedule") {
+  document.addEventListener('DOMContentLoaded', function(event){
+    var target = document.body;
+
+      observer = new MutationObserver(onDOMChange);
+      observer.observe(target, {childList: true, subtree: true});
+      log("Mutations observer installed");
+  });
+}
+else {
+  window.addEventListener('load', function () {
+    //alert("It's loaded!");
+    loc = window.location.href.split("/");
+    n = loc.length;
+    if(loc[n - 1] == "semesterschedule") {
+
+      course_total = 0;
+      // find all elem-total
+      a = document.getElementsByClassName("event-title");
+      const semCoursesSet = new Set();
+      for(i = 0; i < a.length; i++) {
+        semCoursesSet.add(a[i].childNodes[0].innerHTML.split(" ")[0]);
+      }
+      for (const item of semCoursesSet) {
+        console.log(item);
+        hours = data[item] && data[item]["hrs"];
+        course_total += (hours);
+      }
+      console.log(course_total);
+      // update total (top right corner of the calendar)
+      course_total = Math.round(course_total * 100) / 100;
+      var course_total_node = document.getElementsByClassName("schedule-units-label")[0];
+      if (course_total_node) {
+          var label = course_total > 0 ? " (FCE: " + course_total + ")" : "";
+          var existingText = course_total_node.innerText;
+          if(!existingText.includes("FCE")){
+            course_total_node.innerText = existingText + label;
+          }
+
+      }
+    }
+  });
+}
