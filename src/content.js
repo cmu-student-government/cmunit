@@ -41,13 +41,13 @@ var data, // fce data
   observer;  // listener of DOM change events
 
 const DEBUG=1, INFO=1, WARNING=3, ERROR=4, CRITICAL=5;
-var log_level = ERROR;
+var log_level = DEBUG;
 
 function log(message, level) {
   level = level || DEBUG;
   if (level >= log_level) console.log(message);
 }
-
+const courses_with_undefined_fces = new Set()
 function onDOMChange (mutations) {
 
   mutations.forEach(function(mutation) {
@@ -78,7 +78,9 @@ function onDOMChange (mutations) {
               units_node.innerHTML += " (FCE avg: " + hours + ")";
           }
           else {
-              hours = parseInt(match[2]);
+              hours = 0;
+              units_node.innerHTML += " (No FCE data!)";
+              courses_with_undefined_fces.add(course_id);
           }
           course_total += (hours);
           units_node.setAttribute("data-fce-hours", hours);
@@ -113,11 +115,23 @@ function onDOMChange (mutations) {
     mutation.removedNodes.forEach(function(node) { // added nodes
       if (node.nodeType !== 1) return;
 
+
       // plan course schedule - course removed
       node.querySelectorAll("div.txt").forEach(function (units_node) {
         if (!units_node.hasAttribute("data-fce-hours")) return;
+        h = parseFloat(units_node.getAttribute("data-fce-hours"));
+        course_total -= h;
+        if(h == 0) {
+          //console.log("undefined fce");
 
-        course_total -= parseFloat(units_node.getAttribute("data-fce-hours"));
+          var id_re = /(\d{5})\s*::\s*(\d+)/,
+            match = units_node && id_re.exec(units_node.innerHTML);
+          if(match) {
+            console.log(match[1]);
+            courses_with_undefined_fces.delete(match[1]);
+          }
+
+        }
       });
     });
 
@@ -135,15 +149,22 @@ function onDOMChange (mutations) {
     }
     if (course_total_node) {
         var label = course_total > 0 ? " (FCE: " + course_total + ")" : "";
-        if (label != course_total_node.innerText)
-          course_total_node.innerText = label;
+        split = course_total_node.innerHTML.split(" ");
+        var existing_fce = 0;
+        if(split.length >= 3){
+          existing_fce = parseFloat(split[2].split(")")[0]);
+
+        }
+        var already_undefined = course_total_node.innerHTML.includes("<a>");
+        var now_undefined = courses_with_undefined_fces.size > 0;
+        anchor = " <a href='#' title='One or more courses have missing FCEs!'>*</a>";
+        if(existing_fce != course_total){
+          course_total_node.innerHTML = label;
+        }
+
     }
 
   });
-
-
-
-
 }
 
 function onHashChange(event) {
@@ -179,6 +200,7 @@ else {
   window.addEventListener('load', function () {
     //alert("It's loaded!");
     loc = window.location.href.split("/");
+    undefined_hrs = false;
     n = loc.length;
     if(loc[n - 1] == "semesterschedule") {
 
@@ -192,6 +214,11 @@ else {
       for (const item of semCoursesSet) {
         console.log(item);
         hours = data[item] && data[item]["hrs"];
+        console.log(hours);
+        if(hours == undefined) {
+          hours = 0;
+          undefined_hrs = true;
+        }
         course_total += (hours);
       }
       console.log(course_total);
@@ -202,7 +229,13 @@ else {
           var label = course_total > 0 ? " (FCE: " + course_total + ")" : "";
           var existingText = course_total_node.innerText;
           if(!existingText.includes("FCE")){
-            course_total_node.innerText = existingText + label;
+            if(!undefined_hrs) {
+              course_total_node.innerText = existingText + label;
+            }
+            else {
+              course_total_node.innerHTML = existingText + label + " <a href='#' title='One or more courses have missing FCEs!'>*</a>";
+            }
+
           }
 
       }
